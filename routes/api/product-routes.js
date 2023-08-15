@@ -9,7 +9,10 @@ router.get('/', async (req, res) => {
       // find all products
       // be sure to include its associated Category and Tag data
       const productData = await Product.findAll({
-        include: [{ model: Category, through: Tag, as: 'product_categories' }]
+        include: [
+          { model: Category, as: 'category' },
+          {model: Tag, through: ProductTag, as: 'tags'}
+        ]
     });
     res.status(200).json(productData);
   } catch (err) {
@@ -24,8 +27,11 @@ router.get('/:id', async (req, res) => {
   // find a single product by its `id`
   // be sure to include its associated Category and Tag data
     const productData = await Product.findByPk(req.params.id, {
-      include: [{ model: Category, through: Tag, as: 'product_categories' }]
-    });
+      include: [
+        { model: Category, as: 'category' },
+        {model: Tag, through: ProductTag, as: 'tags'}
+      ]
+  });
 
     if (!productData) {
       res.status(404).json({ message: 'No product found with this id!' });
@@ -78,7 +84,7 @@ router.put('/:id', (req, res) => {
       // get list of current tag_ids
       const productTagIds = productTags.map(({ tag_id }) => tag_id);
       // create filtered list of new tag_ids
-      const newProductTags = req.body.tagIds
+      const newProductTags = req.body.tag_id
         .filter((tag_id) => !productTagIds.includes(tag_id))
         .map((tag_id) => {
           return {
@@ -99,7 +105,7 @@ router.put('/:id', (req, res) => {
     })
     .then((updatedProductTags) => res.json(updatedProductTags))
     .catch((err) => {
-      // console.log(err);
+     console.log(err);
       res.status(400).json(err);
     });
 });
